@@ -6,7 +6,7 @@ module.exports = {
     ganache: {
       url: "http://127.0.0.1:7545", // port de Ganache
       accounts: [
-        "0x0f96d34a9b323fdda63e848c915b67546683e83913c953c00b6c57b62bec8a32"  // Remplacez par la clé privée du compte Ganache
+        "0x37b97d8d9ecf83d4dd4e5e25d6306373b4e163684635d2ca7c2ce827d18ed2e1"  // Remplacez par la clé privée du compte Ganache
       ]
     }
   }
