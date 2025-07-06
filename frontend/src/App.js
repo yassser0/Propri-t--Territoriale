@@ -4,7 +4,7 @@ import contractABI from "./PropertyRegistry.json";
 import "bootstrap/dist/css/bootstrap.min.css";
 import jsPDF from "jspdf";
 
-const CONTRACT_ADDRESS = "0x546060cE11F3E96A24CF693FC4314E5D3B60795c";
+const CONTRACT_ADDRESS = "0x184b933B2e4E2ed21002494213D012427eEe4487";
 
 function App() {
   const [account, setAccount] = useState(null);
@@ -24,8 +24,6 @@ function App() {
   const [searchId, setSearchId] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
-  const [citizenName, setCitizenName] = useState("");
-  const [citizenCerts, setCitizenCerts] = useState([]);
 
   // Styles CSS intégrés avec animations et effets modernes
   const styles = {
@@ -297,441 +295,524 @@ function App() {
   };
 
   const generatePDF = (data) => {
-    const doc = new jsPDF();
-    doc.text("Certificat de Propriété", 20, 20);
-    doc.text(`ID : ${data.certId}`, 20, 40);
-    doc.text(`Propriétaire : ${data.owner}`, 20, 50);
-    doc.text(`Type : ${data.propertyType}`, 20, 60);
-    doc.text(`Localisation : ${data.location}`, 20, 70);
-    doc.text(`Superficie : ${data.area} m²`, 20, 80);
-    doc.text(`Date : ${data.date}`, 20, 90);
-    doc.save(`Certificat-${data.certId}.pdf`);
+  const doc = new jsPDF();
+  
+  // Configuration des couleurs
+  const primaryColor = [41, 128, 185];    // Bleu professionnel
+  const secondaryColor = [52, 73, 94];    // Gris foncé
+  const accentColor = [231, 76, 60];      // Rouge accent
+  const lightGray = [236, 240, 241];      // Gris clair
+  
+  // Dimensions de la page
+  const pageWidth = doc.internal.pageSize.width;
+  const pageHeight = doc.internal.pageSize.height;
+  
+  // === HEADER AVEC BORDURE DÉCORATIVE ===
+  // Bordure supérieure colorée
+  doc.setFillColor(...primaryColor);
+  doc.rect(0, 0, pageWidth, 15, 'F');
+  
+  // Bordure inférieure colorée
+  doc.setFillColor(...primaryColor);
+  doc.rect(0, pageHeight - 15, pageWidth, 15, 'F');
+  
+  // === TITRE PRINCIPAL ===
+  doc.setFontSize(28);
+  doc.setTextColor(...primaryColor);
+  doc.setFont("helvetica", "bold");
+  const title = "CERTIFICAT DE PROPRIÉTÉ";
+  const titleWidth = doc.getTextWidth(title);
+  doc.text(title, (pageWidth - titleWidth) / 2, 35);
+  
+  // Ligne décorative sous le titre
+  doc.setLineWidth(2);
+  doc.setDrawColor(...accentColor);
+  doc.line(40, 45, pageWidth - 40, 45);
+  
+  // === NUMÉRO DE CERTIFICAT (Mise en évidence) ===
+  doc.setFillColor(...lightGray);
+  doc.roundedRect(20, 55, pageWidth - 40, 25, 5, 5, 'F');
+  
+  doc.setFontSize(16);
+  doc.setTextColor(...accentColor);
+  doc.setFont("helvetica", "bold");
+  doc.text("N° CERTIFICAT:", 30, 70);
+  
+  doc.setTextColor(...secondaryColor);
+  doc.setFont("helvetica", "normal");
+  doc.text(data.certId, 30, 75);
+  
+  // === INFORMATIONS PRINCIPALES ===
+  let yPosition = 100;
+  const lineHeight = 20;
+  const leftMargin = 30;
+  
+  // Style pour les labels
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...primaryColor);
+  
+  // Style pour les valeurs
+  const valueStyle = () => {
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...secondaryColor);
+    doc.setFontSize(11);
   };
+  
+  // Propriétaire
+  doc.text("PROPRIÉTAIRE:", leftMargin, yPosition);
+  valueStyle();
+  doc.text(data.owner, leftMargin + 50, yPosition);
+  
+  // Ligne de séparation
+  doc.setLineWidth(0.5);
+  doc.setDrawColor(...lightGray);
+  doc.line(leftMargin, yPosition + 5, pageWidth - 30, yPosition + 5);
+  
+  yPosition += lineHeight;
+  
+  // Type de propriété
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...primaryColor);
+  doc.text("TYPE DE BIEN:", leftMargin, yPosition);
+  valueStyle();
+  doc.text(data.propertyType, leftMargin + 50, yPosition);
+  
+  // Ligne de séparation
+  doc.setLineWidth(0.5);
+  doc.setDrawColor(...lightGray);
+  doc.line(leftMargin, yPosition + 5, pageWidth - 30, yPosition + 5);
+  
+  yPosition += lineHeight;
+  
+  // Localisation
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...primaryColor);
+  doc.text("LOCALISATION:", leftMargin, yPosition);
+  valueStyle();
+  doc.text(data.location, leftMargin + 50, yPosition);
+  
+  // Ligne de séparation
+  doc.setLineWidth(0.5);
+  doc.setDrawColor(...lightGray);
+  doc.line(leftMargin, yPosition + 5, pageWidth - 30, yPosition + 5);
+  
+  yPosition += lineHeight;
+  
+  // Superficie
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...primaryColor);
+  doc.text("SUPERFICIE:", leftMargin, yPosition);
+  valueStyle();
+  doc.text(`${data.area} m²`, leftMargin + 50, yPosition);
+  
+  // Ligne de séparation
+  doc.setLineWidth(0.5);
+  doc.setDrawColor(...lightGray);
+  doc.line(leftMargin, yPosition + 5, pageWidth - 30, yPosition + 5);
+  
+  yPosition += lineHeight;
+  
+  // Date d'émission
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...primaryColor);
+  doc.text("DATE D'ÉMISSION:", leftMargin, yPosition);
+  valueStyle();
+  doc.text(data.date, leftMargin + 50, yPosition);
+  
+  // === SECTION VALIDATION ===
+  yPosition += 40;
+  
+  // Cadre de validation
+  doc.setLineWidth(1);
+  doc.setDrawColor(...primaryColor);
+  doc.rect(20, yPosition, pageWidth - 40, 50);
+  
+  // Titre de validation
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...primaryColor);
+  doc.text("VALIDATION OFFICIELLE", 30, yPosition + 15);
+  
+  // Texte de validation
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...secondaryColor);
+  doc.text("Ce certificat atteste de la propriété du bien immobilier", 30, yPosition + 25);
+  doc.text("désigné ci-dessus conformément aux registres officiels.", 30, yPosition + 35);
+  
+  // === FOOTER ===
+  const footerY = pageHeight - 30;
+  
+  // Ligne décorative
+  doc.setLineWidth(1);
+  doc.setDrawColor(...primaryColor);
+  doc.line(20, footerY, pageWidth - 20, footerY);
+  
+  // Texte du footer
+  doc.setFontSize(8);
+  doc.setTextColor(...secondaryColor);
+  doc.setFont("helvetica", "italic");
+  const footerText = "Document généré automatiquement - Validité sous réserve de vérification";
+  const footerWidth = doc.getTextWidth(footerText);
+  doc.text(footerText, (pageWidth - footerWidth) / 2, footerY + 10);
+  
+  // === FILIGRANE (optionnel) ===
+  doc.setFontSize(50);
+  doc.setTextColor(240, 240, 240); // Très clair
+  doc.setFont("helvetica", "bold");
+  
+  // Rotation du texte pour le filigrane
+  const centerX = pageWidth / 2;
+  const centerY = pageHeight / 2;
+  
+  doc.text("CERTIFIÉ", centerX, centerY, {
+    angle: 45,
+    align: 'center'
+  });
+  
+  // Sauvegarde du PDF
+  doc.save(`Certificat-Propriete-${data.certId}.pdf`);
+};
 
-  const handleCitizenSearch = async () => {
-    try {
-      const promises = Array.from({ length: 100 }, async (_, i) => {
-        try {
-          const id = `CERT-${i.toString().padStart(3, "0")}`;
-          const cert = await contract.verifyCertificate(id);
-          if (cert.owner && cert.owner.toLowerCase() === citizenName.toLowerCase()) {
-            return cert;
-          }
-        } catch (_) {}
-        return null;
-      });
-      const results = (await Promise.all(promises)).filter(Boolean);
-      setCitizenCerts(results);
-    } catch (err) {
-      alert("Erreur lors de la recherche des certificats");
-    }
-  };
 
-  return (
-    <div style={styles.globalBackground}>
-      {/* Éléments flottants */}
-      <div className="floating-element"></div>
-      <div className="floating-element"></div>
-      <div className="floating-element"></div>
-      
-      <div className="container" style={styles.mainContainer}>
-        {/* Header avec animation gradient */}
-        <div style={styles.headerGradient}>
-          <div style={styles.headerOverlay}></div>
-          <div className="text-center text-white position-relative">
-            <h1 className="display-4 fw-bold mb-3" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>
-              🏛️ PropertyChain
-            </h1>
-            <p className="lead mb-0" style={{ fontSize: '1.3rem', opacity: '0.9' }}>
-              Système de Certification Blockchain Immobilière
-            </p>
-          </div>
-        </div>
 
-        <div className="p-4">
-          {/* Status Account */}
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <div className="d-flex align-items-center">
-              <div className="me-3" style={{ width: '15px', height: '15px', borderRadius: '50%', background: account ? '#00d4aa' : '#ff6b6b', ...styles.pulseEffect }}></div>
-              <span className="fw-bold">
-                {account ? `🔗 ${account.slice(0, 6)}...${account.slice(-4)}` : "⚠️ Non connecté"}
-              </span>
+  
+    return (
+      <div style={styles.globalBackground}>
+        {/* Éléments flottants */}
+        <div className="floating-element"></div>
+        <div className="floating-element"></div>
+        <div className="floating-element"></div>
+        
+        <div className="container" style={styles.mainContainer}>
+          {/* Header avec animation gradient */}
+          <div style={styles.headerGradient}>
+            <div style={styles.headerOverlay}></div>
+            <div className="text-center text-white position-relative">
+              <h1 className="display-4 fw-bold mb-3" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>
+                🏛️ PropertyChain
+              </h1>
+              <p className="lead mb-0" style={{ fontSize: '1.3rem', opacity: '0.9' }}>
+                Système de Certification Blockchain Immobilière
+              </p>
             </div>
-            {isAdmin && (
-              <span style={styles.statusBadge} className="slide-in">
-                👑 ADMINISTRATEUR
-              </span>
-            )}
           </div>
-
-          {/* Section Admin */}
-          {isAdmin && (
+  
+          <div className="p-4">
+            {/* Status Account */}
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <div className="d-flex align-items-center">
+                <div className="me-3" style={{ width: '15px', height: '15px', borderRadius: '50%', background: account ? '#00d4aa' : '#ff6b6b', ...styles.pulseEffect }}></div>
+                <span className="fw-bold">
+                  {account ? `🔗 ${account.slice(0, 6)}...${account.slice(-4)}` : "⚠️ Non connecté"}
+                </span>
+              </div>
+              {isAdmin && (
+                <span style={styles.statusBadge} className="slide-in">
+                  👑 ADMINISTRATEUR
+                </span>
+              )}
+            </div>
+  
+            {/* Section Admin */}
+            {isAdmin && (
+              <div className="glass-card slide-in" style={styles.glassCard}>
+                <div className="d-flex align-items-center mb-4">
+                  <div className="me-3" style={{ width: '4px', height: '40px', background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)', borderRadius: '2px' }}></div>
+                  <h3 className="mb-0 fw-bold">📝 Nouveau Certificat</h3>
+                </div>
+                
+                <form onSubmit={handleAdd}>
+                  <div className="row g-3">
+                    <div className="col-md-6">
+                      <input
+                        className="form-control modern-input"
+                        style={styles.modernInput}
+                        name="certId"
+                        placeholder="🆔 ID du certificat"
+                        value={formAdd.certId}
+                        onChange={handleAddChange}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <input
+                        className="form-control modern-input"
+                        style={styles.modernInput}
+                        name="owner"
+                        placeholder="👤 Propriétaire"
+                        value={formAdd.owner}
+                        onChange={handleAddChange}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <input
+                        className="form-control modern-input"
+                        style={styles.modernInput}
+                        name="propertyType"
+                        placeholder="🏠 Type de propriété"
+                        value={formAdd.propertyType}
+                        onChange={handleAddChange}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <input
+                        className="form-control modern-input"
+                        style={styles.modernInput}
+                        name="location"
+                        placeholder="📍 Localisation"
+                        value={formAdd.location}
+                        onChange={handleAddChange}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <input
+                        className="form-control modern-input"
+                        style={styles.modernInput}
+                        name="area"
+                        type="number"
+                        placeholder="📐 Superficie (m²)"
+                        value={formAdd.area}
+                        onChange={handleAddChange}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <input
+                        className="form-control modern-input"
+                        style={styles.modernInput}
+                        name="date"
+                        type="date"
+                        value={formAdd.date}
+                        onChange={handleAddChange}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="text-center mt-4">
+                    <button type="submit" className="neon-button" style={styles.neonButton}>
+                      ✨ Créer le Certificat
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+  
+            {/* Section Recherche */}
             <div className="glass-card slide-in" style={styles.glassCard}>
               <div className="d-flex align-items-center mb-4">
-                <div className="me-3" style={{ width: '4px', height: '40px', background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)', borderRadius: '2px' }}></div>
-                <h3 className="mb-0 fw-bold">📝 Nouveau Certificat</h3>
+                <div className="me-3" style={{ width: '4px', height: '40px', background: 'linear-gradient(45deg, #4ecdc4, #45b7d1)', borderRadius: '2px' }}></div>
+                <h3 className="mb-0 fw-bold">🔍 Recherche de Certificat</h3>
               </div>
               
-              <form onSubmit={handleAdd}>
-                <div className="row g-3">
-                  <div className="col-md-6">
-                    <input
-                      className="form-control modern-input"
-                      style={styles.modernInput}
-                      name="certId"
-                      placeholder="🆔 ID du certificat"
-                      value={formAdd.certId}
-                      onChange={handleAddChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <input
-                      className="form-control modern-input"
-                      style={styles.modernInput}
-                      name="owner"
-                      placeholder="👤 Propriétaire"
-                      value={formAdd.owner}
-                      onChange={handleAddChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <input
-                      className="form-control modern-input"
-                      style={styles.modernInput}
-                      name="propertyType"
-                      placeholder="🏠 Type de propriété"
-                      value={formAdd.propertyType}
-                      onChange={handleAddChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <input
-                      className="form-control modern-input"
-                      style={styles.modernInput}
-                      name="location"
-                      placeholder="📍 Localisation"
-                      value={formAdd.location}
-                      onChange={handleAddChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <input
-                      className="form-control modern-input"
-                      style={styles.modernInput}
-                      name="area"
-                      type="number"
-                      placeholder="📐 Superficie (m²)"
-                      value={formAdd.area}
-                      onChange={handleAddChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <input
-                      className="form-control modern-input"
-                      style={styles.modernInput}
-                      name="date"
-                      type="date"
-                      value={formAdd.date}
-                      onChange={handleAddChange}
-                      required
-                    />
-                  </div>
+              <div className="row g-3">
+                <div className="col-md-8">
+                  <input
+                    className="form-control modern-input"
+                    style={styles.modernInput}
+                    value={searchId}
+                    onChange={(e) => setSearchId(e.target.value)}
+                    placeholder="🔍 Entrez l'ID du certificat (ex: CERT-001)"
+                  />
                 </div>
-                <div className="text-center mt-4">
-                  <button type="submit" className="neon-button" style={styles.neonButton}>
-                    ✨ Créer le Certificat
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-
-          {/* Section Recherche */}
-          <div className="glass-card slide-in" style={styles.glassCard}>
-            <div className="d-flex align-items-center mb-4">
-              <div className="me-3" style={{ width: '4px', height: '40px', background: 'linear-gradient(45deg, #4ecdc4, #45b7d1)', borderRadius: '2px' }}></div>
-              <h3 className="mb-0 fw-bold">🔍 Recherche de Certificat</h3>
-            </div>
-            
-            <div className="row g-3">
-              <div className="col-md-8">
-                <input
-                  className="form-control modern-input"
-                  style={styles.modernInput}
-                  value={searchId}
-                  onChange={(e) => setSearchId(e.target.value)}
-                  placeholder="🔍 Entrez l'ID du certificat (ex: CERT-001)"
-                />
-              </div>
-              <div className="col-md-4">
-                <button
-                  className="neon-button w-100"
-                  style={{...styles.neonButton, background: 'linear-gradient(45deg, #4ecdc4, #45b7d1)'}}
-                  onClick={handleSearch}
-                >
-                  🚀 Rechercher
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Erreur */}
-          {error && (
-            <div className="alert alert-danger slide-in" style={{ 
-              borderRadius: '15px', 
-              border: 'none', 
-              background: 'linear-gradient(45deg, #ff6b6b, #ff5252)', 
-              color: 'white',
-              boxShadow: '0 10px 25px rgba(255, 107, 107, 0.3)'
-            }}>
-              <strong>{error}</strong>
-            </div>
-          )}
-
-          {/* Résultat */}
-          {result && (
-            <div className="slide-in" style={styles.resultCard}>
-              <div className="text-center mb-4">
-                <div className="d-inline-block p-3 rounded-circle mb-3" style={{ background: 'linear-gradient(45deg, #00d4aa, #00b894)' }}>
-                  <i className="text-white" style={{ fontSize: '2rem' }}>📄</i>
-                </div>
-                <h2 className="fw-bold mb-3">Certificat Vérifié</h2>
-                <div className="d-inline-block px-3 py-2 rounded-pill" style={{ background: 'linear-gradient(45deg, #00d4aa, #00b894)', color: 'white' }}>
-                  ✅ Authentifié sur Blockchain
-                </div>
-              </div>
-
-              <div className="row g-4">
-                <div className="col-md-6">
-                  <div className="p-3 rounded-3" style={{ background: 'rgba(78, 205, 196, 0.1)' }}>
-                    <h6 className="fw-bold text-muted mb-2">🆔 IDENTIFIANT</h6>
-                    <p className="h5 mb-0 text-primary">{result.certId}</p>
-                  </div>
-                </div>
-                <div className="col-md-6">
-                  <div className="p-3 rounded-3" style={{ background: 'rgba(69, 183, 209, 0.1)' }}>
-                    <h6 className="fw-bold text-muted mb-2">👤 PROPRIÉTAIRE</h6>
-                    <p className="h5 mb-0 text-info">{result.owner}</p>
-                  </div>
-                </div>
-                <div className="col-md-6">
-                  <div className="p-3 rounded-3" style={{ background: 'rgba(255, 107, 107, 0.1)' }}>
-                    <h6 className="fw-bold text-muted mb-2">🏠 TYPE</h6>
-                    <p className="h5 mb-0 text-danger">{result.propertyType}</p>
-                  </div>
-                </div>
-                <div className="col-md-6">
-                  <div className="p-3 rounded-3" style={{ background: 'rgba(156, 39, 176, 0.1)' }}>
-                    <h6 className="fw-bold text-muted mb-2">📍 LOCALISATION</h6>
-                    <p className="h5 mb-0" style={{ color: '#9c27b0' }}>{result.location}</p>
-                  </div>
-                </div>
-                <div className="col-md-6">
-                  <div className="p-3 rounded-3" style={{ background: 'rgba(255, 193, 7, 0.1)' }}>
-                    <h6 className="fw-bold text-muted mb-2">📐 SUPERFICIE</h6>
-                    <p className="h5 mb-0 text-warning">{result.area} m²</p>
-                  </div>
-                </div>
-                <div className="col-md-6">
-                  <div className="p-3 rounded-3" style={{ background: 'rgba(76, 175, 80, 0.1)' }}>
-                    <h6 className="fw-bold text-muted mb-2">📅 DATE</h6>
-                    <p className="h5 mb-0 text-success">{result.date}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-center mt-4">
-                <button
-                  className="neon-button me-3"
-                  style={{...styles.neonButton, background: 'linear-gradient(45deg, #00d4aa, #00b894)'}}
-                  onClick={() => generatePDF(result)}
-                >
-                  📊 Télécharger PDF
-                </button>
-                {isAdmin && (
+                <div className="col-md-4">
                   <button
-                    className="neon-button"
-                    style={{...styles.neonButton, background: 'linear-gradient(45deg, #ffc107, #ff9800)'}}
-                    onClick={() => setFormEdit(result)}
+                    className="neon-button w-100"
+                    style={{...styles.neonButton, background: 'linear-gradient(45deg, #4ecdc4, #45b7d1)'}}
+                    onClick={handleSearch}
                   >
-                    ✏️ Modifier
+                    🚀 Rechercher
                   </button>
-                )}
+                </div>
               </div>
             </div>
-          )}
-
-          {/* Formulaire de modification */}
-          {formEdit && isAdmin && (
-            <div className="glass-card slide-in" style={{...styles.glassCard, background: 'rgba(255, 193, 7, 0.1)'}}>
-              <div className="d-flex align-items-center mb-4">
-                <div className="me-3" style={{ width: '4px', height: '40px', background: 'linear-gradient(45deg, #ffc107, #ff9800)', borderRadius: '2px' }}></div>
-                <h3 className="mb-0 fw-bold">✏️ Modification du Certificat</h3>
+  
+            {/* Erreur */}
+            {error && (
+              <div className="alert alert-danger slide-in" style={{ 
+                borderRadius: '15px', 
+                border: 'none', 
+                background: 'linear-gradient(45deg, #ff6b6b, #ff5252)', 
+                color: 'white',
+                boxShadow: '0 10px 25px rgba(255, 107, 107, 0.3)'
+              }}>
+                <strong>{error}</strong>
               </div>
-              
-              <form onSubmit={handleEdit}>
-                <div className="row g-3">
-                  <div className="col-md-6">
-                    <input
-                      className="form-control"
-                      style={{...styles.modernInput, background: 'rgba(255, 255, 255, 0.5)'}}
-                      name="certId"
-                      value={formEdit.certId}
-                      readOnly
-                    />
+            )}
+  
+            {/* Résultat */}
+            {result && (
+              <div className="slide-in" style={styles.resultCard}>
+                <div className="text-center mb-4">
+                  <div className="d-inline-block p-3 rounded-circle mb-3" style={{ background: 'linear-gradient(45deg, #00d4aa, #00b894)' }}>
+                    <i className="text-white" style={{ fontSize: '2rem' }}>📄</i>
                   </div>
-                  <div className="col-md-6">
-                    <input
-                      className="form-control modern-input"
-                      style={styles.modernInput}
-                      name="owner"
-                      value={formEdit.owner}
-                      onChange={handleEditChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <input
-                      className="form-control modern-input"
-                      style={styles.modernInput}
-                      name="propertyType"
-                      value={formEdit.propertyType}
-                      onChange={handleEditChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <input
-                      className="form-control modern-input"
-                      style={styles.modernInput}
-                      name="location"
-                      value={formEdit.location}
-                      onChange={handleEditChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <input
-                      className="form-control modern-input"
-                      style={styles.modernInput}
-                      name="area"
-                      type="number"
-                      value={formEdit.area}
-                      onChange={handleEditChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <input
-                      className="form-control modern-input"
-                      style={styles.modernInput}
-                      name="date"
-                      type="date"
-                      value={formEdit.date}
-                      onChange={handleEditChange}
-                      required
-                    />
+                  <h2 className="fw-bold mb-3">Certificat Vérifié</h2>
+                  <div className="d-inline-block px-3 py-2 rounded-pill" style={{ background: 'linear-gradient(45deg, #00d4aa, #00b894)', color: 'white' }}>
+                    ✅ Authentifié sur Blockchain
                   </div>
                 </div>
+  
+                <div className="row g-4">
+                  <div className="col-md-6">
+                    <div className="p-3 rounded-3" style={{ background: 'rgba(78, 205, 196, 0.1)' }}>
+                      <h6 className="fw-bold text-muted mb-2">🆔 IDENTIFIANT</h6>
+                      <p className="h5 mb-0 text-primary">{result.certId}</p>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="p-3 rounded-3" style={{ background: 'rgba(69, 183, 209, 0.1)' }}>
+                      <h6 className="fw-bold text-muted mb-2">👤 PROPRIÉTAIRE</h6>
+                      <p className="h5 mb-0 text-info">{result.owner}</p>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="p-3 rounded-3" style={{ background: 'rgba(255, 107, 107, 0.1)' }}>
+                      <h6 className="fw-bold text-muted mb-2">🏠 TYPE</h6>
+                      <p className="h5 mb-0 text-danger">{result.propertyType}</p>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="p-3 rounded-3" style={{ background: 'rgba(156, 39, 176, 0.1)' }}>
+                      <h6 className="fw-bold text-muted mb-2">📍 LOCALISATION</h6>
+                      <p className="h5 mb-0" style={{ color: '#9c27b0' }}>{result.location}</p>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="p-3 rounded-3" style={{ background: 'rgba(255, 193, 7, 0.1)' }}>
+                      <h6 className="fw-bold text-muted mb-2">📐 SUPERFICIE</h6>
+                      <p className="h5 mb-0 text-warning">{result.area} m²</p>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="p-3 rounded-3" style={{ background: 'rgba(76, 175, 80, 0.1)' }}>
+                      <h6 className="fw-bold text-muted mb-2">📅 DATE</h6>
+                      <p className="h5 mb-0 text-success">{result.date}</p>
+                    </div>
+                  </div>
+                </div>
+  
                 <div className="text-center mt-4">
                   <button
-                    type="submit"
                     className="neon-button me-3"
-                    style={{...styles.neonButton, background: 'linear-gradient(45deg, #ffc107, #ff9800)'}}
+                    style={{...styles.neonButton, background: 'linear-gradient(45deg, #00d4aa, #00b894)'}}
+                    onClick={() => generatePDF(result)}
                   >
-                    💾 Sauvegarder
+                    📊 Télécharger PDF
                   </button>
-                  <button
-                    type="button"
-                    className="neon-button"
-                    style={{...styles.neonButton, background: 'linear-gradient(45deg, #6c757d, #495057)'}}
-                    onClick={() => setFormEdit(null)}
-                  >
-                    ❌ Annuler
-                  </button>
+                  {isAdmin && (
+                    <button
+                      className="neon-button"
+                      style={{...styles.neonButton, background: 'linear-gradient(45deg, #ffc107, #ff9800)'}}
+                      onClick={() => setFormEdit(result)}
+                    >
+                      ✏️ Modifier
+                    </button>
+                  )}
                 </div>
-              </form>
-            </div>
-          )}
-
-          {/* Recherche par citoyen */}
-          <div className="glass-card slide-in" style={{...styles.glassCard, background: 'rgba(156, 39, 176, 0.05)'}}>
-            <div className="d-flex align-items-center mb-4">
-              <div className="me-3" style={{ width: '4px', height: '40px', background: 'linear-gradient(45deg, #9c27b0, #673ab7)', borderRadius: '2px' }}></div>
-              <h3 className="mb-0 fw-bold">👥 Recherche par Propriétaire</h3>
-            </div>
-            
-            <div className="row g-3">
-              <div className="col-md-8">
-                <input
-                  className="form-control modern-input"
-                  style={styles.modernInput}
-                  value={citizenName}
-                  onChange={(e) => setCitizenName(e.target.value)}
-                  placeholder="👤 Nom du propriétaire"
-                />
               </div>
-              <div className="col-md-4">
-                <button
-                  className="neon-button w-100"
-                  style={{...styles.neonButton, background: 'linear-gradient(45deg, #9c27b0, #673ab7)'}}
-                  onClick={handleCitizenSearch}
-                >
-                  🔍 Rechercher
-                </button>
+            )}
+  
+            {/* Formulaire de modification */}
+            {formEdit && isAdmin && (
+              <div className="glass-card slide-in" style={{...styles.glassCard, background: 'rgba(255, 193, 7, 0.1)'}}>
+                <div className="d-flex align-items-center mb-4">
+                  <div className="me-3" style={{ width: '4px', height: '40px', background: 'linear-gradient(45deg, #ffc107, #ff9800)', borderRadius: '2px' }}></div>
+                  <h3 className="mb-0 fw-bold">✏️ Modification du Certificat</h3>
+                </div>
+                
+                <form onSubmit={handleEdit}>
+                  <div className="row g-3">
+                    <div className="col-md-6">
+                      <input
+                        className="form-control"
+                        style={{...styles.modernInput, background: 'rgba(255, 255, 255, 0.5)'}}
+                        name="certId"
+                        value={formEdit.certId}
+                        readOnly
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <input
+                        className="form-control modern-input"
+                        style={styles.modernInput}
+                        name="owner"
+                        value={formEdit.owner}
+                        onChange={handleEditChange}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <input
+                        className="form-control modern-input"
+                        style={styles.modernInput}
+                        name="propertyType"
+                        value={formEdit.propertyType}
+                        onChange={handleEditChange}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <input
+                        className="form-control modern-input"
+                        style={styles.modernInput}
+                        name="location"
+                        value={formEdit.location}
+                        onChange={handleEditChange}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <input
+                        className="form-control modern-input"
+                        style={styles.modernInput}
+                        name="area"
+                        type="number"
+                        value={formEdit.area}
+                        onChange={handleEditChange}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <input
+                        className="form-control modern-input"
+                        style={styles.modernInput}
+                        name="date"
+                        type="date"
+                        value={formEdit.date}
+                        onChange={handleEditChange}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="text-center mt-4">
+                    <button
+                      type="submit"
+                      className="neon-button me-3"
+                      style={{...styles.neonButton, background: 'linear-gradient(45deg, #ffc107, #ff9800)'}}
+                    >
+                      💾 Sauvegarder
+                    </button>
+                    <button
+                      type="button"
+                      className="neon-button"
+                      style={{...styles.neonButton, background: 'linear-gradient(45deg, #6c757d, #495057)'}}
+                      onClick={() => setFormEdit(null)}
+                    >
+                      ❌ Annuler
+                    </button>
+                  </div>
+                </form>
               </div>
-            </div>
-
-            {citizenCerts.length > 0 && (
-              <div className="mt-4">
-                <h5 className="mb-3">📋 Certificats trouvés ({citizenCerts.length})</h5>
-                <div className="row g-3">
-                  {citizenCerts.map((cert, index) => (
-                    <div key={index} className="col-md-6 col-lg-4">
-                      <div className="card border-0 h-100 cert-card" style={{
-                        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.6))',
-                        borderRadius: '15px',
-                        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
-                        transition: 'all 0.3s ease'
-                      }}>
-                        <div className="card-body p-3">
-                          <div className="d-flex justify-content-between align-items-start mb-2">
-                            <span className="badge" style={{...styles.statusBadge, fontSize: '0.8rem'}}>
-                              {cert.certId}
-                            </span>
-                            <div style={{ fontSize: '1.5rem' }}>🏠</div>
-                          </div>
-                                                    <h6 className="card-title mb-2">{cert.propertyType}</h6>
-                                                    <p className="text-muted mb-1" style={{ fontSize: '0.9rem' }}>{cert.location}</p>
-                                                    <div className="d-flex justify-content-between align-items-center">
-                                                      <span style={{ fontWeight: 600, color: "#00b894" }}>📐 {cert.area} m²</span>
-                                                      <span style={{ fontWeight: 600, color: "#9c27b0" }}>📅 {cert.date}</span>
-                                                    </div>
-                                                  </div>
-                                                  <div className="card-footer bg-transparent border-0 text-end p-2">
-                                                    <button
-                                                      className="btn btn-sm btn-outline-primary"
-                                                      onClick={() => generatePDF(cert)}
-                                                    >
-                                                      📄 PDF
-                                                    </button>
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            ))}
-                                          </div>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          }
-                          
-                          export default App;
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  export default App;
