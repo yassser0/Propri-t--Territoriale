@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.30;
+pragma solidity ^0.8.0;
 
 contract PropertyRegistry {
     address public admin;
@@ -37,5 +37,10 @@ contract PropertyRegistry {
 
     function verifyCertificate(string memory _certId) public view returns (Certificate memory) {
         return certificates[_certId];
+    }
+
+    // 🔑 Fonction ajoutée pour le frontend
+    function getAdmin() public view returns (address) {
+        return admin;
     }
 }
